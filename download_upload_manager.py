@@ -91,7 +91,22 @@ def download_image_concurrently(image_urls: list, saving_path_dir='images/', max
 
 
 if __name__ == '__main__':
-    url = input('Enter URL: ')
-    image = worker_download_image(url)
-    save_image_binary(image, 'image.jpg')
-    print('Done!')
+    time_start = time.time()
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s | %(name)s | %(levelname)s | %(message)s'
+    )
+    urls = [
+        'http://xiaomi-fa.com/store/wp-content/uploads/2019/04/IMG_20190416_190029-880x640.jpg',
+        'http://xiaomi-fa.com/store/wp-content/uploads/2019/04/IMG_20190416_190129-880x695.jpg',
+        'http://xiaomi-fa.com/store/wp-content/uploads/2019/04/IMG_20190416_190109-1-880x823.jpg',
+        'http://xiaomi-fa.com/store/wp-content/uploads/2019/04/IMG_20190416_190056-880x629.jpg',
+        'http://xiaomi-fa.com/store/wp-content/uploads/2019/04/IMG_20190416_194537-664x880.jpg',
+        'http://xiaomi-fa.com/store/wp-content/uploads/2019/04/IMG_20190416_190040-817x880.jpg',
+        'http://xiaomi-fa.com/store/wp-content/uploads/2019/04/Screenshot_2019-04-16-19-46-56-194_com.android.chrome-797x880.jpg',
+        'http://xiaomi-fa.com/store/wp-content/uploads/2019/04/IMG_20190416_194524-622x880.jpg',
+    ]
+    # image = download_image_worker(url)
+    # save_image_binary(image, 'image.jpg')
+    download_image_concurrently(urls[:], 'images', max_worker=4)
+    print('Done! %.2f' % (time.time() - time_start))
