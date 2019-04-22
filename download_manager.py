@@ -1,3 +1,4 @@
+import Config
 import logging
 import os
 import requests
@@ -127,7 +128,7 @@ if __name__ == '__main__':
     time_start = time.time()
     logging.basicConfig(
         level=logging.DEBUG,
-        format='%(asctime)s | %(name)s | %(levelname)s | %(message)s'
+        format=Config.Logging.format
     )
     urls = [
         'http://xiaomi-fa.com/store/wp-content/uploads/2019/04/IMG_20190416_190029-880x640.jpg',
