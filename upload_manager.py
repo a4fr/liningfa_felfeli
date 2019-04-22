@@ -54,9 +54,10 @@ def upload_images_concurrently(images: dict, saving_path_dir='images/',max_worke
         for filename, data in workers.items():
             logging.info('Waiting for %s...' % filename)
             result = data['worker'].result()
-            hook_function_input['liningfa_url'] = result
-            hook_function_input['image_id'] = data['image_id']
-            hook_function(hook_function_input)
+            if hook_function:
+                hook_function_input['liningfa_url'] = result
+                hook_function_input['image_id'] = data['image_id']
+                hook_function(hook_function_input)
 
 
 def upload_all_images_in_db(db_name: str='felfeli.db'):
