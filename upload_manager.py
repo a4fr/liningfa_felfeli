@@ -4,10 +4,22 @@ import logging
 import Config
 import concurrent.futures
 import download_manager
+import wp_api
 
 
-def upload_image_worker():
-    pass
+def upload_image_worker(image_path: str):
+    """ image_path ro migira va ax ro upload mikone rooye website
+    dar nahayat address rooye website ro barmigardoone
+    :param image_path: str
+    :return: str: liningfa_url: url upload shode rooye website
+    """
+    logging_data = {
+        'username': Config.WPAPI.username,
+        'password': Config.WPAPI.password,
+    }
+    res = wp_api.upload_image(image_path, logging_data)
+    liningfa_url = res['url']
+    return liningfa_url
 
 
 def upload_images_concurrently(image_paths: list, saving_path_dir='images/', max_worker=4):
@@ -40,4 +52,15 @@ if __name__ == '__main__':
         level=logging.DEBUG,
         format=Config.Logging.format
     )
+    images_url = [
+        'https://cdns.lining.com/postsystem/docroot/images/goods/201903/465050/detail_465050_2.jpg',
+        'https://cdns.lining.com/postsystem/docroot/images/goods/201903/465050/detail_465050_3.jpg',
+        'https://cdns.lining.com/postsystem/docroot/images/goods/201903/465050/detail_465050_6.jpg',
+        'https://cdns.lining.com/postsystem/docroot/images/goods/201903/465050/detail_465050_9.jpg',
+    ]
+    for url in images_url:
+        filename = download_manager.extract_filename_from_url(url)
+        path = download_manager.normalize_saving_path_dir('images/') + filename
+        print(path)
+        print(upload_image_worker(path))
     print('Done! %.2f' % (time.time() - time_start))
