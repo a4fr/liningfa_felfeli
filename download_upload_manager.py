@@ -3,7 +3,9 @@ import os
 import requests
 import time
 import concurrent.futures
-
+import sqlite3
+from pprint import pprint
+import arrow
 
 def download_image_worker(image_url: str) -> bytes:
     """ image ro download mikone va binary ro return mikone
@@ -90,6 +92,32 @@ def download_images_concurrently(image_urls: list, saving_path_dir='images/', ma
             worker.result()
 
 
+def download_all_images_in_db(db_name: str='felfeli.db'):
+    """ Tamam URL ha ro az db darmiare va download mikone
+    :param db_name: esm datanbase
+    """
+    # list url ha'i ke bayad download shavand
+    logging.debug('Creating Connection with "%s" DataBase...' % db_name)
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
+    c.execute(""" SELECT id, lining_url, last_update FROM images WHERE liningfa_url is null or liningfa_url is '' """)
+    images = c.fetchall()
+
+    # download url ha
+    urls = [image[1] for image in images]
+    download_images_concurrently(urls, max_worker=4)
+
+    # berooz resani field last_update
+    datetime_now = str(arrow.now('Asia/Tehran'))
+    c.executemany(""" UPDATE images SET last_update=? WHERE id=? """, [(datetime_now, image[0]) for image in images])
+    logging.info('Updating last_update[%s] field...' % datetime_now)
+    conn.commit()
+
+    # close DB connection
+    logging.debug('Closing "%s" database...' % db_name)
+    conn.close()
+
+
 if __name__ == '__main__':
     time_start = time.time()
     logging.basicConfig(
@@ -108,5 +136,6 @@ if __name__ == '__main__':
     ]
     # image = download_image_worker(url)
     # save_image_binary(image, 'image.jpg')
-    download_images_concurrently(urls[:], 'images', max_worker=4)
+    # download_images_concurrently(urls[:], 'images', max_worker=4)
+    download_all_images_in_db()
     print('Done! %.2f' % (time.time() - time_start))
