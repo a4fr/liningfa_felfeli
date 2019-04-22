@@ -22,7 +22,7 @@ def upload_images_concurrently(image_paths: list, saving_path_dir='images/', max
         workers = dict()
         for path in image_paths:
             if os.path.exists(path) and os.path.getsize(path):
-                logging.debug('Uploading %s...' % path)
+                logging.info('Uploading %s...' % path)
                 filename = download_manager.extract_filename_from_url(url)
                 worker = executor.submit(upload_image_worker, path, path)
                 workers[filename] = worker
