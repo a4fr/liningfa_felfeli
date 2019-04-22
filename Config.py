@@ -14,3 +14,4 @@ class DB:
 
 class DownloadUploadManager:
     saving_path_dir = 'images/'
+    max_worker = 4
