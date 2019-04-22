@@ -1,12 +1,12 @@
 import requests
 import os
-from Config import WPAPI
+import Config
 from pprint import pprint
 import logging
 
 
 def upload_image(image_path, login_data):
-    api_endpoint = WPAPI.media_api_endpoint
+    api_endpoint = Config.WPAPI.media_api_endpoint
     data = open(image_path, 'rb').read()
     filename = os.path.basename(image_path)
     res = requests.post(
@@ -27,7 +27,7 @@ def upload_image(image_path, login_data):
 
 
 def delete_image(image_id, login_data):
-    api_endpoint =WPAPI.media_api_endpoint + str(image_id)
+    api_endpoint =Config.WPAPI.media_api_endpoint + str(image_id)
     logging.info('Deletting %s...' % api_endpoint)
     res = requests.delete(
         url=api_endpoint,
@@ -39,9 +39,13 @@ def delete_image(image_id, login_data):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format=Config.Logging.format
+    )
     login_data = {
-        'username': WPAPI.username,
-        'password': WPAPI.password,
+        'username': Config.WPAPI.username,
+        'password': Config.WPAPI.password,
     }
     print(upload_image('1.jpeg', login_data))
     image_id = input('Enter Image ID to delete: ')
