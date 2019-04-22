@@ -10,3 +10,7 @@ class Logging:
 
 class DB:
     name = 'felfeli.db'
+
+
+class DownloadUploadManager:
+    saving_path_dir = 'images/'
