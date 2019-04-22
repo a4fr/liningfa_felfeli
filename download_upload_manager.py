@@ -83,9 +83,13 @@ def download_images_concurrently(image_urls: list, saving_path_dir='images/', ma
         for url in image_urls:
             filename = extract_filename_from_url(url)
             path = normalize_saving_path_dir(saving_path_dir) + filename
-            logging.debug('%s -> %s' % (path, url))
-            worker = executor.submit(download_and_save_image_worker, url, path)
-            workers[filename] = worker
+            if not os.path.exists(path) or \
+                    (os.path.exists(path) and not os.path.getsize(path)):
+                logging.debug('%s -> %s' % (path, url))
+                worker = executor.submit(download_and_save_image_worker, url, path)
+                workers[filename] = worker
+            else:
+                logging.info('File "%s" already exist!' % path)
 
         for filename, worker in workers.items():
             logging.info('Waiting for %s...' % filename)
