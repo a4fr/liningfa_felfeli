@@ -50,7 +50,7 @@ def extract_filename_from_url(url: str) -> str:
     https://cdns.lining.com/postsystem/docroot/images/goods/201808/424806/detail_424806_1.jpg
     (To) -> detail_424806_1.jpg
     """
-    logging.debug('URL: %s' % url)
+    # logging.debug('URL: %s' % url)
     url = url.strip()
     return url[url.rfind('/')+1:]
 
