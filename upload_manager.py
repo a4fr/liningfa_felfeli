@@ -25,7 +25,7 @@ def upload_images_concurrently(image_urls: list, saving_path_dir='images/', max_
             path = download_manager.normalize_saving_path_dir(saving_path_dir) + filename
             if os.path.exists(path) and os.path.getsize(path):
                 logging.debug('Uploading %s...' % path)
-                worker = executor.submit(upload_image_worker, url, path)
+                worker = executor.submit(upload_image_worker, path, path)
                 workers[filename] = worker
             else:
                 logging.info('File "%s" not exist!' % path)
