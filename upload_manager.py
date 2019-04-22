@@ -10,7 +10,7 @@ def upload_image_worker():
     pass
 
 
-def upload_images_concurrently(image_urls: list, saving_path_dir='images/', max_worker=4):
+def upload_images_concurrently(image_paths: list, saving_path_dir='images/', max_worker=4):
     """ ye list az url migire va besoorat movazi upload mikard
     :param image_urls: list url ha
     :param saving_path_dir: pooshe'i ke image ha toosh zakhire mishe mesl /home/user/felfeli/images/
@@ -20,11 +20,10 @@ def upload_images_concurrently(image_urls: list, saving_path_dir='images/', max_
 
     with concurrent.futures.ProcessPoolExecutor(max_workers=max_worker) as executor:
         workers = dict()
-        for url in image_urls:
-            filename = download_manager.extract_filename_from_url(url)
-            path = download_manager.normalize_saving_path_dir(saving_path_dir) + filename
+        for path in image_paths:
             if os.path.exists(path) and os.path.getsize(path):
                 logging.debug('Uploading %s...' % path)
+                filename = download_manager.extract_filename_from_url(url)
                 worker = executor.submit(upload_image_worker, path, path)
                 workers[filename] = worker
             else:
