@@ -55,6 +55,15 @@ def extract_filename_from_url(url: str) -> str:
     return url[url.rfind('/')+1:]
 
 
+def normalize_saving_path_dir(dir_path: str) -> str:
+    """ path bayad besoorat path/to/dir/ basge
+    akaresh bayad / dashte bashe
+    """
+    if dir_path[-1] != '/':
+        dir_path += '/'
+    return dir_path
+
+
 def download_images_concurrently(image_urls: list, saving_path_dir='images/', max_worker=4):
     """ ye list az url migire va besoorat movazi download mikard
     :param image_urls: list url ha
@@ -62,15 +71,6 @@ def download_images_concurrently(image_urls: list, saving_path_dir='images/', ma
     :param max_worker: max tedad worker tooye ThreadingPool ProcessingPool
     :return:
     """
-    ##############################################################
-    def normalize_saving_path_dir(dir_path: str) -> str:
-        """ path bayad besoorat path/to/dir/ basge
-        akaresh bayad / dashte bashe
-        """
-        if dir_path[-1] != '/':
-            dir_path += '/'
-        return dir_path
-    ##############################################################
 
     # directory saving_path_dir ro missaze
     try:
