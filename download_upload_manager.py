@@ -51,7 +51,7 @@ def extract_filename_from_url(url: str) -> str:
     return url[url.rfind('/')+1:]
 
 
-def download_image_concurrently(image_urls: list, saving_path_dir='images/', max_worker=4):
+def download_images_concurrently(image_urls: list, saving_path_dir='images/', max_worker=4):
     """ ye list az url migire va besoorat movazi download mikard
     :param image_urls: list url ha
     :param saving_path_dir: pooshe'i ke image ha toosh zakhire mishe mesl /home/user/felfeli/images/
@@ -108,5 +108,5 @@ if __name__ == '__main__':
     ]
     # image = download_image_worker(url)
     # save_image_binary(image, 'image.jpg')
-    download_image_concurrently(urls[:], 'images', max_worker=4)
+    download_images_concurrently(urls[:], 'images', max_worker=4)
     print('Done! %.2f' % (time.time() - time_start))
