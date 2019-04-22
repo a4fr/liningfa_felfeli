@@ -7,6 +7,7 @@ import sqlite3
 from pprint import pprint
 import arrow
 
+
 def download_image_worker(image_url: str) -> bytes:
     """ image ro download mikone va binary ro return mikone
     :param image_url: str
