@@ -6,3 +6,7 @@ class WPAPI:
 
 class Logging:
     format = '%(asctime)s | %(name)s | %(levelname)s | %(message)s'
+
+
+class DB:
+    name = 'felfeli.db'

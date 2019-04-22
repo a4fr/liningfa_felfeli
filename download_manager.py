@@ -143,5 +143,5 @@ if __name__ == '__main__':
     # image = download_image_worker(url)
     # save_image_binary(image, 'image.jpg')
     # download_images_concurrently(urls[:], 'images', max_worker=4)
-    download_all_images_in_db()
+    download_all_images_in_db(db_name=Config.DB.name)
     print('Done! %.2f' % (time.time() - time_start))
