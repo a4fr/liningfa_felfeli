@@ -120,6 +120,23 @@ def update_liningfa_url_in_db(func_input):
     conn.commit()
 
 
+def test_upload_urls():
+    images_url = [
+        'https://cdns.lining.com/postsystem/docroot/images/goods/201903/465050/detail_465050_2.jpg',
+        'https://cdns.lining.com/postsystem/docroot/images/goods/201903/465050/detail_465050_3.jpg',
+        'https://cdns.lining.com/postsystem/docroot/images/goods/201903/465050/detail_465050_6.jpg',
+        'https://cdns.lining.com/postsystem/docroot/images/goods/201903/465050/detail_465050_9.jpg',
+    ]
+    for url in images_url:
+        filename = download_manager.extract_filename_from_url(url)
+        path = download_manager.normalize_saving_path_dir('images/') + filename
+        print(path)
+        print(upload_image_worker(path))
+
+
+def test_upload_all_images_in_db():
+    upload_all_images_in_db()
+
 
 if __name__ == '__main__':
     time_start = time.time()
@@ -127,16 +144,5 @@ if __name__ == '__main__':
         level=logging.DEBUG,
         format=Config.Logging.format
     )
-    images_url = [
-        'https://cdns.lining.com/postsystem/docroot/images/goods/201903/465050/detail_465050_2.jpg',
-        'https://cdns.lining.com/postsystem/docroot/images/goods/201903/465050/detail_465050_3.jpg',
-        'https://cdns.lining.com/postsystem/docroot/images/goods/201903/465050/detail_465050_6.jpg',
-        'https://cdns.lining.com/postsystem/docroot/images/goods/201903/465050/detail_465050_9.jpg',
-    ]
-    # for url in images_url:
-    #     filename = download_manager.extract_filename_from_url(url)
-    #     path = download_manager.normalize_saving_path_dir('images/') + filename
-    #     print(path)
-    #     print(upload_image_worker(path))
-    upload_all_images_in_db()
+    test_upload_all_images_in_db()
     print('Done! %.2f' % (time.time() - time_start))
