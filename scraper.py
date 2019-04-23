@@ -1,3 +1,5 @@
+import arrow
+import sqlite3
 from pprint import pprint
 import logging
 import time
@@ -230,6 +232,37 @@ def get_product_details(product_url: str) -> dict:
     return details
 
 
+def saved_product_details_on_db(lining_pid, details: dict, db_name='felfeli.db'):
+    """ Detail ro migire va tooye database zakhire mikone
+    :param lining_pid: id mahsool tooye lining.com
+    :param details: dict
+    :param db_name: esm database
+    :return akharin data zakhire shode rooye db lining_pid
+    """
+    logging.debug('Creating Connection with "%s" DataBase...' % db_name)
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
+    c.execute(""" SELECT * FROM details WHERE lining_pid=? """, (lining_pid,))
+    data = c.fetchone()
+
+    details_json = json.dumps(details)
+    datetime_now = str(arrow.now('Asia/Tehran'))
+    if data:
+        # update row
+        row_id = data[0]
+        c.execute(""" UPDATE details SET json=?, last_update=? WHERE id=? """, (details_json, datetime_now, row_id))
+        conn.commit()
+    else:
+        # create row
+        c.execute(""" INSERT INTO details (lining_pid, json, last_update) VALUES (?, ?, ?) """, (lining_pid, details_json, datetime_now))
+        conn.commit()
+
+    c.execute(""" SELECT * FROM details WHERE lining_pid=? """, (lining_pid,))
+    data = c.fetchone()
+    conn.close()
+    return data
+
+
 def test_get_products_of_category():
     category_url = 'https://store.lining.com/shop/goodsCate-sale,desc,1,15s15_122,15_122,15_122_m,15_122s15_122_10,15_122_10-0-0-15_122_10,15_122_10-0s0-0-0-min,max-0.html'
     logging.info('Getting products URL...')
@@ -243,12 +276,63 @@ def test_get_product_detail():
     pprint(details)
 
 
+def test_saved_product_details_on_db():
+    lining_pid = 529859
+    details = {
+        'all_sizes': [('529865', '39', 'onsale'),
+               ('529870', '39.5', 'onsale'),
+               ('529860', '40', 'onsale'),
+               ('529861', '41', 'onsale'),
+               ('529862', '41.5', 'onsale'),
+               ('529863', '42', 'onsale'),
+               ('529869', '43', 'onsale'),
+               ('529859', '43.5', 'onsale'),
+               ('529866', '44', 'onsale'),
+               ('529867', '45', 'onsale'),
+               ('529868', '45.5', 'stockout'),
+               ('529864', '46', 'stockout')],
+ 'description': {'Color': '夜空蓝/海豚蓝',
+                 'Sex': '男',
+                 'Shoe soft and hard index': '柔软',
+                 'Shoes breathability index': '较透气/适中',
+                 'Sport Type': '羽毛球',
+                 '展示面料': 'PU(油墨印刷)+纺织品',
+                 '鞋底': '橡胶+EVA'},
+ 'description_images': ['https://cdns.lining.com/postsystem/docroot/images/goods/201812/439675/detail_439675_1.jpg',
+                        'https://cdns.lining.com/postsystem/docroot/images/goods/201812/439675/detail_439675_2.jpg',
+                        'https://cdns.lining.com/postsystem/docroot/images/goods/201812/439675/detail_439675_3.jpg',
+                        'https://cdns.lining.com/postsystem/docroot/images/goods/201812/439675/detail_439675_4.jpg',
+                        'https://cdns.lining.com/postsystem/docroot/images/goods/201812/439675/detail_439675_5.jpg',
+                        'https://cdns.lining.com/postsystem/docroot/images/goods/201812/439675/detail_439675_6.jpg',
+                        'https://cdns.lining.com/postsystem/docroot/images/goods/201812/439675/detail_439675_7.jpg',
+                        'https://cdns.lining.com/postsystem/docroot/images/goods/201812/439675/detail_439675_8.jpg',
+                        'https://cdns.lining.com/postsystem/docroot/images/goods/201812/439675/detail_439675_9.jpg',
+                        'https://cdns.lining.com/postsystem/docroot/images/goods/201812/439675/detail_439675_10.jpg',
+                        'https://cdns.lining.com/postsystem/docroot/images/goods/201812/439675/detail_439675_11.jpg',
+                        'https://cdns.lining.com/postsystem/docroot/images/goods/201812/439675/detail_439675_12.jpg'],
+ 'name': '羽毛球系列男子羽毛球训练鞋',
+ 'part_number': 'AYTN035',
+ 'pid': '529859',
+ 'price': '499.00',
+ 'price_offer': '349.00',
+ 'related_products_id': ['506532', '529728', '506523', '533027', '533808'],
+ 'sku': 'AYTN035-1',
+ 'slider_images': ['https://cdns.lining.com/postsystem/docroot/images/goods/201812/439675/max_display_439675_1.jpg',
+                   'https://cdns.lining.com/postsystem/docroot/images/goods/201812/439675/max_display_439675_2.jpg',
+                   'https://cdns.lining.com/postsystem/docroot/images/goods/201812/439675/max_display_439675_3.jpg',
+                   'https://cdns.lining.com/postsystem/docroot/images/goods/201812/439675/max_display_439675_4.jpg',
+                   'https://cdns.lining.com/postsystem/docroot/images/goods/201812/439675/max_display_439675_5.jpg']}
+    data = saved_product_details_on_db(lining_pid, details)
+    pprint(data)
+
+
 if __name__ == '__main__':
     time_start = time.time()
     logging.basicConfig(
-        level=logging.INFO,
+        level=logging.DEBUG,
         format=Config.Logging.format
     )
     # test_get_products_of_category()
-    test_get_product_detail()
+    # test_get_product_detail()
+    test_saved_product_details_on_db()
     print('Done! %.2f' % (time.time() - time_start))
