@@ -124,12 +124,17 @@ def download_all_images_in_db(db_name: str='felfeli.db'):
     conn.close()
 
 
-if __name__ == '__main__':
-    time_start = time.time()
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format=Config.Logging.format
-    )
+def test_download_all_images_in_db():
+    download_all_images_in_db(db_name=Config.DB.name)
+
+
+def test_download_and_save_image():
+    url = 'http://xiaomi-fa.com/store/wp-content/uploads/2019/04/IMG_20190416_190029-880x640.jpg'
+    image = download_image_worker(url)
+    save_image_binary(image, 'image.jpg')
+
+
+def test_download_images_concurrently():
     urls = [
         'http://xiaomi-fa.com/store/wp-content/uploads/2019/04/IMG_20190416_190029-880x640.jpg',
         'http://xiaomi-fa.com/store/wp-content/uploads/2019/04/IMG_20190416_190129-880x695.jpg',
@@ -140,8 +145,14 @@ if __name__ == '__main__':
         'http://xiaomi-fa.com/store/wp-content/uploads/2019/04/Screenshot_2019-04-16-19-46-56-194_com.android.chrome-797x880.jpg',
         'http://xiaomi-fa.com/store/wp-content/uploads/2019/04/IMG_20190416_194524-622x880.jpg',
     ]
-    # image = download_image_worker(url)
-    # save_image_binary(image, 'image.jpg')
-    # download_images_concurrently(urls[:], 'images', max_worker=4)
-    download_all_images_in_db(db_name=Config.DB.name)
+    download_images_concurrently(urls[:], 'images', max_worker=4)
+
+
+if __name__ == '__main__':
+    time_start = time.time()
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format=Config.Logging.format
+    )
+
     print('Done! %.2f' % (time.time() - time_start))
