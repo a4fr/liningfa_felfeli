@@ -1,3 +1,4 @@
+import concurrent.futures
 import arrow
 import sqlite3
 from pprint import pprint
@@ -263,6 +264,32 @@ def saved_product_details_on_db(lining_pid, details: dict, db_name='felfeli.db')
     return data
 
 
+def get_product_details_concurrently(products: list, max_worker=4) -> dict:
+    """ besoorat concurrent ejra mikone
+    :param products: list: [
+        {'pid':..., 'url':...},
+        {'pid':..., 'url':...},
+        {'pid':..., 'url':...},
+    ]
+    :return dict: {
+        pid: result,
+        pid: result,
+        pid: result,
+    }
+    """
+    with concurrent.futures.ProcessPoolExecutor(max_workers=max_worker) as executor:
+        workers = dict()
+        for p in products:
+            workers[p['pid']] = executor.submit(get_product_details, p['url'])
+
+    # gereftan khoroji
+    results = dict()
+    for pid, worker in workers.items():
+        logging.info('Watting for product#%s...' % pid)
+        results[pid] = worker.result()
+    return results
+
+
 def test_get_products_of_category():
     category_url = 'https://store.lining.com/shop/goodsCate-sale,desc,1,15s15_122,15_122,15_122_m,15_122s15_122_10,15_122_10-0-0-15_122_10,15_122_10-0s0-0-0-min,max-0.html'
     logging.info('Getting products URL...')
@@ -326,6 +353,23 @@ def test_saved_product_details_on_db():
     pprint(data)
 
 
+def test_get_products_detail_concurrently():
+    products = [
+        {'pid': '533969',
+         'url': 'https://store.lining.com/shop/goods-533969.html'},
+        {'pid': '324521',
+         'url': 'https://store.lining.com/shop/goods-324521.html'},
+        {'pid': '529859',
+         'url': 'https://store.lining.com/shop/goods-529859.html'},
+        {'pid': '533957',
+         'url': 'https://store.lining.com/shop/goods-533957.html'},
+        # {'pid': '438658',
+        #  'url': 'https://store.lining.com/shop/goods-438658.html'},
+    ]
+    results = get_product_details_concurrently(products, max_worker=Config.DownloadUploadManager.max_worker)
+    pprint(results)
+
+
 if __name__ == '__main__':
     time_start = time.time()
     logging.basicConfig(
@@ -334,5 +378,6 @@ if __name__ == '__main__':
     )
     # test_get_products_of_category()
     # test_get_product_detail()
-    test_saved_product_details_on_db()
+    # test_saved_product_details_on_db()
+    test_get_products_detail_concurrently()
     print('Done! %.2f' % (time.time() - time_start))
