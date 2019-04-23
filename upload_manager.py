@@ -52,8 +52,10 @@ def upload_images_concurrently(images: dict, saving_path_dir='images/',max_worke
                 logging.info('File "%s" not exist!' % path)
 
         for filename, data in workers.items():
-            logging.info('Waiting for %s...' % filename)
+            time_start_download = time.time()
+            logging.debug('Waiting for %s...' % filename)
             result = data['worker'].result()
+            logging.info('%s uploaded! | (%.2fs)' % (filename, time.time()-time_start_download))
             if hook_function:
                 hook_function_input['liningfa_url'] = result
                 hook_function_input['image_id'] = data['image_id']
