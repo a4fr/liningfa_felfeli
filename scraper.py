@@ -378,6 +378,19 @@ def test_get_products_detail_concurrently():
     pprint(results)
 
 
+def test_get_products_detail_concurrently_in_category(max_num=20):
+    category_url = 'https://store.lining.com/shop/goodsCate-sale,desc,1,15s15_122,15_122,15_122_m,15_122s15_122_10,15_122_10-0-0-15_122_10,15_122_10-0s0-0-0-min,max-0.html'
+    logging.info('Getting products URL...')
+    products = get_products(category_url)
+    if len(products) > max_num:
+        products = products[:max_num]
+    get_product_details_concurrently(
+        products=[{'pid': p['id'], 'url': p['url']} for p in products],
+        max_worker=Config.DownloadUploadManager.max_worker,
+        db_name=Config.DB.name,
+        save_in_db=True,
+    )
+
 if __name__ == '__main__':
     time_start = time.time()
     logging.basicConfig(
@@ -387,5 +400,6 @@ if __name__ == '__main__':
     # test_get_products_of_category()
     # test_get_product_detail()
     # test_saved_product_details_on_db()
-    test_get_products_detail_concurrently()
+    # test_get_products_detail_concurrently()
+    test_get_products_detail_concurrently_in_category(max_num=10)
     print('Done! %.2f' % (time.time() - time_start))
