@@ -264,7 +264,7 @@ def saved_product_details_on_db(lining_pid, details: dict, db_name='felfeli.db')
     return data
 
 
-def get_product_details_concurrently(products: list, max_worker=4) -> dict:
+def get_product_details_concurrently(products: list, max_worker=4, save_in_db=True,  db_name='felfeli.db') -> dict:
     """ besoorat concurrent ejra mikone
     :param products: list: [
         {'pid':..., 'url':...},
@@ -280,13 +280,21 @@ def get_product_details_concurrently(products: list, max_worker=4) -> dict:
     with concurrent.futures.ProcessPoolExecutor(max_workers=max_worker) as executor:
         workers = dict()
         for p in products:
+            logging.debug('Submitting product#%s...' % p['pid'])
             workers[p['pid']] = executor.submit(get_product_details, p['url'])
 
     # gereftan khoroji
     results = dict()
     for pid, worker in workers.items():
         logging.info('Watting for product#%s...' % pid)
-        results[pid] = worker.result()
+        result = worker.result()
+        results[pid] = result
+        if save_in_db:
+            saved_product_details_on_db(
+                lining_pid=pid,
+                details=result,
+                db_name=db_name
+            )
     return results
 
 
