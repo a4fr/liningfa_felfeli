@@ -298,6 +298,29 @@ def get_product_details_concurrently(products: list, max_worker=4, save_in_db=Tr
     return results
 
 
+def add_images_url_in_db(urls: list, db_name='felfeli.db'):
+    """ ye list az URL migire va oonaro tooye db.images zakhire mikone
+    :param urls: list url haye ax
+    :param db_name: str
+    """
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
+
+    datetime_now = str(arrow.now('Asia/Tehran'))
+    for url in urls:
+        # check is exist
+        logging.debug('Searching for "%s" in DB...' % url)
+        c.execute(""" SELECT id FROM images WHERE lining_url=? """, (url,))
+        row = c.fetchone()
+
+        # add to db if not exist
+        if not row:
+            logging.info('Adding "%s" to DB...' % url)
+            c.execute(""" INSERT INTO images (lining_url, last_update) VALUES (?, ?) """, (url, datetime_now))
+            conn.commit()
+    conn.close()
+
+
 def test_get_products_of_category():
     category_url = 'https://store.lining.com/shop/goodsCate-sale,desc,1,15s15_122,15_122,15_122_m,15_122s15_122_10,15_122_10-0-0-15_122_10,15_122_10-0s0-0-0-min,max-0.html'
     logging.info('Getting products URL...')
@@ -391,6 +414,17 @@ def test_get_products_detail_concurrently_in_category(max_num=20):
         save_in_db=True,
     )
 
+
+def test_add_images_url_in_db():
+    urls = [
+        'https://cdns.lining.com/postsystem/docroot/images/goods/201712/348478/detail_348478_4.jpg',
+        'https://cdns.lining.com/postsystem/docroot/images/goods/201712/348478/detail_348478_4.jpg',
+        'https://cdns.lining.com/postsystem/docroot/images/goods/201806/405090/detail_405090_2.jpg',
+        'https://cdns.lining.com/postsystem/docroot/images/goods/201806/405090/detail_405090_2.jpg',
+    ]
+    add_images_url_in_db(urls, db_name=Config.DB.name)
+
+
 if __name__ == '__main__':
     time_start = time.time()
     logging.basicConfig(
@@ -401,5 +435,6 @@ if __name__ == '__main__':
     # test_get_product_detail()
     # test_saved_product_details_on_db()
     # test_get_products_detail_concurrently()
-    test_get_products_detail_concurrently_in_category(max_num=10)
+    # test_get_products_detail_concurrently_in_category(max_num=10)
+    test_add_images_url_in_db()
     print('Done! %.2f' % (time.time() - time_start))
