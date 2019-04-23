@@ -155,4 +155,4 @@ if __name__ == '__main__':
         format=Config.Logging.format
     )
     test_download_all_images_in_db()
-    print('Done! %.2f' % (time.time() - time_start))
+    print('Done! %.2fs' % (time.time() - time_start))
