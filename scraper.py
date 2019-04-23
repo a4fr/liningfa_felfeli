@@ -90,14 +90,18 @@ def get_products(category_url):
     return products
 
 
+def test_get_products_of_category():
+    category_url = 'https://store.lining.com/shop/goodsCate-sale,desc,1,15s15_122,15_122,15_122_m,15_122s15_122_10,15_122_10-0-0-15_122_10,15_122_10-0s0-0-0-min,max-0.html'
+    logging.info('Getting products URL...')
+    products = get_products(category_url)
+    pprint(products)
+
+
 if __name__ == '__main__':
     time_start = time.time()
     logging.basicConfig(
         level=logging.INFO,
         format=Config.Logging.format
     )
-    category_url = 'https://store.lining.com/shop/goodsCate-sale,desc,1,15s15_122,15_122,15_122_m,15_122s15_122_10,15_122_10-0-0-15_122_10,15_122_10-0s0-0-0-min,max-0.html'
-    logging.info('Getting products URL...')
-    products = get_products(category_url)
-    pprint(products)
+    test_get_products_of_category()
     print('Done! %.2f' % (time.time() - time_start))
