@@ -72,5 +72,8 @@ if __name__ == '__main__':
 """)
         if sys.argv[1] == 'clone_db':
             create_database(Config.DB.name)
-    test_create_database()
+
+    #######################################################################
+    else:
+        test_create_database()
     print('Done! (%.1fs)' % (time.time()-time_start))
