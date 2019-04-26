@@ -98,6 +98,8 @@ def upload_all_images_in_db(db_name: str='felfeli.db'):
         c.executemany(""" UPDATE images SET last_update=? WHERE id=? """, [(datetime_now, image[0]) for image in db_images])
         logging.info('Updating last_update[%s] field...' % datetime_now)
         conn.commit()
+    else:
+        logging.info('All images already uploaded!')
 
     # close DB connection
     logging.debug('Closing "%s" database...' % db_name)
