@@ -92,10 +92,12 @@ def upload_all_images_in_db(db_name: str='felfeli.db'):
     )
 
     # berooz resani field last_update
-    datetime_now = str(arrow.now('Asia/Tehran'))
-    c.executemany(""" UPDATE images SET last_update=? WHERE id=? """, [(datetime_now, image[0]) for image in db_images])
-    logging.info('Updating last_update[%s] field...' % datetime_now)
-    conn.commit()
+    # age axi ro upload karde bashe
+    if len(db_images) > 0:
+        datetime_now = str(arrow.now('Asia/Tehran'))
+        c.executemany(""" UPDATE images SET last_update=? WHERE id=? """, [(datetime_now, image[0]) for image in db_images])
+        logging.info('Updating last_update[%s] field...' % datetime_now)
+        conn.commit()
 
     # close DB connection
     logging.debug('Closing "%s" database...' % db_name)
