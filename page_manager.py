@@ -162,7 +162,18 @@ def test_create_product_page_on_website():
         version="wc/v3",
         timeout=20,
     )
-    create_product_page_on_website(pid, wcapi=wcapi)
+    categories = [
+        {
+            "id": 98
+        },
+        {
+            "id": 95
+        },
+        {
+            "id": 93
+        },
+    ]
+    create_product_page_on_website(pid, wcapi=wcapi, categories=categories)
 
 
 if __name__ == '__main__':
