@@ -1,3 +1,4 @@
+import concurrent.futures
 from woocomerce_api.woocomerce import API as WC_API
 from woocomerce_api import products as wc_product
 from pprint import pprint
@@ -152,6 +153,81 @@ def create_product_page_on_website(lining_pid, wcapi, categories=None):
         return product['id']
 
 
+def create_products_page_on_website_concurrently(lining_pids_categories: list, wcapi, max_worker: int = 4):
+    """ create page on website concurrently
+    :param lining_pids_categories: [{lining_pid:.., categories:...}, ...`]
+    :param wcapi: WCAPI
+    :param max_worker: int, number of worker
+    :return: {lining_pid:liningfa_pid, ...}
+    """
+    with concurrent.futures.ProcessPoolExecutor(max_workers=max_worker) as executor:
+        workers = dict()
+        for data in lining_pids_categories:
+            lining_pid = data['lining_pid']
+            if 'categories' in data:
+                categories = data['categories']
+            else:
+                categories = None
+
+            workers[lining_pid] = executor.submit(create_product_page_on_website, lining_pid, wcapi, categories)
+            logging.debug('Adding lining[%s] to queue...' % lining_pid)
+
+        results = dict()
+        for lining_pid, worker in workers.items():
+            logging.info('Waiting for page of lining[%s] in liningfa...' % lining_pid)
+            result = worker.result()
+            results[lining_pid] = result
+
+
+def test_create_products_page_on_website_concurrently():
+    wcapi = WC_API(
+        url="https://liningfa.felfeli-lab.ir",
+        consumer_key="ck_4665c75a6fadda6680bde8cb95681f94cb38b12a",
+        consumer_secret="cs_83a9e7154f4cc33a76de6f5d567b0082a33fd128",
+        wp_api=True,
+        version="wc/v3",
+        timeout=30,
+    )
+    categories = [
+        {
+            "id": 98
+        },
+        {
+            "id": 95
+        },
+        {
+            "id": 93
+        },
+    ]
+    lining_pids_categories = [
+        {
+            'lining_pid': 561792,
+            'categories': None
+        },
+        {
+            'lining_pid': 560505,
+            'categories': None
+        },
+        {
+            'lining_pid': 561970,
+            'categories': categories
+        },
+        {
+            'lining_pid': 559932,
+            'categories': categories
+        },
+        {
+            'lining_pid': 561204,
+            'categories': categories
+        },
+    ]
+    create_products_page_on_website_concurrently(
+        lining_pids_categories,
+        wcapi,
+        max_worker=4
+    )
+
+
 def test_create_product_page_on_website():
     pid = 561792
     wcapi = WC_API(
@@ -182,5 +258,6 @@ if __name__ == '__main__':
         format=Config.Logging.format
     )
     time_start = time.time()
-    test_create_product_page_on_website()
+    # test_create_product_page_on_website()
+    test_create_products_page_on_website_concurrently()
     print('Done! (%.1fs)' % (time.time()-time_start))
