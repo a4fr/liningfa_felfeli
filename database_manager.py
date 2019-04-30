@@ -1,3 +1,4 @@
+from pprint import pprint
 import time
 import sqlite3
 from sqlite3 import Error
@@ -57,6 +58,31 @@ def create_database(db_name='felfeli.db'):
         conn.close()
 
 
+def query_on_database(db_name='felfeli.db', unlimited_times=True):
+    """ Run query on database and show results
+    :param db_name: str
+    :param unlimited_times: get and run query unlimited times
+    :return:
+    """
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
+    while True:
+        query = input('Enter SQL: ')
+        c.execute(query)
+        results = c.fetchall()
+        pprint(results)
+        if not unlimited_times:
+            break
+    conn.close()
+
+
+def test_query_on_database():
+    query_on_database(
+        db_name=Config.DB.name,
+        unlimited_times=True
+    )
+
+
 def test_create_database():
     create_database('felfeli_test.db')
 
@@ -69,9 +95,12 @@ if __name__ == '__main__':
     help                Show this help
     clone_db            Create felfeli.db database, create tables and indexes
     insert_test_rows    Insert a few rows to database for testing scripts
+    query               Run query and print results
 """)
         if sys.argv[1] == 'clone_db':
             create_database(Config.DB.name)
+        elif sys.argv[1] == 'query':
+            test_query_on_database()
 
     #######################################################################
     else:
