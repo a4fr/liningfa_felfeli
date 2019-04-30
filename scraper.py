@@ -1,3 +1,4 @@
+import sys
 import concurrent.futures
 import arrow
 import sqlite3
@@ -328,6 +329,12 @@ def add_images_url_in_db(urls: list, db_name='felfeli.db'):
     conn.close()
 
 
+def get_product_details_with_lining_pid(lining_pid):
+    p_url = 'https://store.lining.com/shop/goods-%s.html' % lining_pid
+    details = get_product_details(p_url)
+    saved_product_details_on_db(lining_pid=lining_pid, details=details)
+
+
 def test_get_products_of_category():
     category_url = 'https://store.lining.com/shop/goodsCate-sale,desc,1,15s15_122,15_122,15_122_m,15_122s15_122_10,15_122_10-0-0-15_122_10,15_122_10-0s0-0-0-min,max-0.html'
     logging.info('Getting products URL...')
@@ -438,10 +445,20 @@ if __name__ == '__main__':
         level=logging.DEBUG,
         format=Config.Logging.format
     )
-    # test_get_products_of_category()
-    # test_get_product_detail()
-    # test_saved_product_details_on_db()
-    # test_get_products_detail_concurrently()
-    test_get_products_detail_concurrently_in_category(max_num=10)
-    # test_add_images_url_in_db()
+    if len(sys.argv) >= 2:
+        if sys.argv[1] == 'help':
+            print("""database_manager.py [command]
+        help                                    Show this help
+        get_product_details_with_lining_pid     ...
+    """)
+        if sys.argv[1] == 'get_product_details_with_lining_pid':
+            pid = input('Enter lining_pid: ')
+            get_product_details_with_lining_pid(pid)
+    else:
+        # test_get_products_of_category()
+        # test_get_product_detail()
+        # test_saved_product_details_on_db()
+        # test_get_products_detail_concurrently()
+        test_get_products_detail_concurrently_in_category(max_num=10)
+        # test_add_images_url_in_db()
     print('Done! %.2f' % (time.time() - time_start))
