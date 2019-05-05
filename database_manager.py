@@ -25,11 +25,15 @@ CREATE TABLE IF NOT EXISTS "details" (
 );"""}
     indexs = [
         """
-CREATE INDEX "lining_pid_index_details" ON "details" (
+CREATE INDEX IF NOT EXISTS "lining_pid_index_details" ON "details" (
 	"lining_pid"
 );""",
         """
-CREATE INDEX "lining_url_index_images" ON "images" (
+CREATE INDEX IF NOT EXISTS "liningfa_pid_index_details" ON "details" (
+    "liningfa_pid"
+);""",
+        """
+CREATE INDEX IF NOT EXISTS "lining_url_index_images" ON "images" (
 	"lining_url"
 );"""
     ]
