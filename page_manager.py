@@ -1,6 +1,8 @@
 import concurrent.futures
+import asyncio
 from woocomerce_api.woocomerce import API as WC_API
-from woocomerce_api import products as wc_product
+from woocomerce_api_async.woocomerce import API as WC_API_ASYNC
+from woocomerce_api_async import products as wc_product
 from pprint import pprint
 import json
 import Config
@@ -179,6 +181,201 @@ def create_products_page_on_website_concurrently(lining_pids_categories: list, w
             results[lining_pid] = result
 
 
+def save_liningfa_pid_in_db(lining_pid_liningfa_pid: list, db_name='felfeli.db'):
+    """ ye list migire va liningfa_pid ro be database ezafe mikone
+    :param lining_pid_liningfa_pid: [{lining_pid:..., liningfa_pid:...}, {lining_pid:..., liningfa_pid:...}]
+    :param db_name: str
+    """
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
+    for d in lining_pid_liningfa_pid:
+        logging.debug('Updating %s on database...' % repr(d))
+        c.execute(""" UPDATE details SET "liningfa_pid"=? WHERE "lining_pid"=? """, (
+            d['liningfa_pid'],
+            d['lining_pid'],
+        ))
+    conn.commit()
+    conn.close()
+
+
+def create_products_page_on_website_async(lining_pids_categories: list, wcapi, max_number_semaphore: int = 100, forced_to_update_page=True):
+    """ safahat ro besoorat async misaze
+    :param lining_pids_categories: [{lining_pid:.., categories:...}, ...`]
+    :param wcapi:
+    :param max_number_semaphore: tedad request haye hamzaman
+    :param forced_to_update_page: bool: besoorat force age True bashe safhe mojood ro update mikone (bakhsh tozihat)
+    :return:
+    """
+
+    # Prepair data for send requests to API
+    details = dict()
+    all_data = dict()
+    products = dict()
+    for data in lining_pids_categories:
+        lining_pid = data['lining_pid']
+        categories = data['categories']
+        detail = get_product_details_from_db(lining_pid, db_name=Config.DB.name)
+
+        # check mikone aya ax haye mahsool upload shodan yana
+        images = get_liningfa_urls_from_db(detail['slider_images'] + detail['description_images'])
+        all_images_uploaded = True
+        for lining_url, liningfa_url in images.items():
+            if not liningfa_url:
+                logging.debug('A few images not uploaded! like: %s' % lining_url)
+                all_images_uploaded = False
+        if not all_images_uploaded:
+            logging.info('LiningPoduct[%s] can\'t create, first upload all images!' % lining_pid)
+        else:
+            #################################################
+            # age ok bood be list ezafe mikone ##############
+            # async notebook PAHSE-1 ########################
+            #################################################
+            details[lining_pid] = detail
+            #################################################
+
+            # prepair data for create product
+            onsale_sizes = [size[1] for size in detail['all_sizes'] if size[2] == 'onsale']
+            data = {
+                'name': 'کفش کتانی لینینگ مدل ' + detail['sku'],
+                'sku': detail['sku'],
+                'type': 'variable',
+                'status': 'publish',
+                'description': '\n'.join(
+                    ['<p style="text-align: center;"><img src="%s"/></p>' % images[src] for src in
+                     detail['description_images']]),
+                'short_description': '',
+                'images': [{'src': images[url]} for url in detail['slider_images']],
+                'stock_status': 'instock',
+                "attributes": [
+                    {
+                        "name": "سایز",
+                        "position": 0,
+                        "visible": True,
+                        "variation": True,
+                        "options": onsale_sizes
+                    }
+                ],
+                'tags': [
+                    {
+                        'id': 83,
+                    },
+                    {
+                        'id': 84,
+                    },
+                    {
+                        'id': 85,
+                    },
+                    {
+                        'id': 86,
+                    },
+                ]
+            }
+            # add category to product id defined
+            if categories:
+                data['categories'] = categories
+
+            # add data to all_data
+            all_data[lining_pid] = data
+
+    # send request to API
+    loop = asyncio.get_event_loop()
+    tasks = []
+    lining_pids = []
+    for lining_pid, data in all_data.items():
+        logging.info('Trying to create page for lining_pid[%s] in liningfa...' % lining_pid)
+        data = all_data[lining_pid]
+        task = asyncio.ensure_future(wcapi.post('products', data))
+        tasks.append(task)
+        lining_pids.append(lining_pid)
+    futures = asyncio.gather(*tasks, return_exceptions=True)
+    results = loop.run_until_complete(futures)
+
+    # list of products that exist on liningfa
+    # send request to API [for update exists products]
+    loop = asyncio.get_event_loop()
+    lining_pids_error_400 = list()
+    tasks_lining_pids_error_400 = []
+    for i in range(len(results)):
+        lining_pid = lining_pids[i]
+        r = results[i]
+        response = r.json()
+        if r.status_code == 400:
+            logging.info('Product already exists. [ID: %s]' % response['data']['resource_id'])
+            if forced_to_update_page:
+                data = all_data[lining_pid]
+                task = asyncio.ensure_future(wcapi.put('products/%s' % response['data']['resource_id'], data))
+                tasks_lining_pids_error_400.append(task)
+            else:
+                products[lining_pid] = {'id': response['data']['resource_id']}
+            lining_pids_error_400.append(lining_pid)
+        else:
+            products[lining_pid] = response
+    futures = asyncio.gather(*tasks_lining_pids_error_400, return_exceptions=True)
+    results = loop.run_until_complete(futures)
+
+    # update response of exists products
+    for i in range(len(results)):
+        lining_pid = lining_pids_error_400[i]
+        r = results[i]
+        response = r.json()
+        products[lining_pid] = response
+
+    # save liningfa_pid on db
+    save_liningfa_pid_in_db(
+        [{'lining_pid': lining_pid, 'liningfa_pid': p['id']} for lining_pid, p in products.items()]
+    )
+
+
+def test_create_products_page_on_website_async():
+    wcapi = WC_API_ASYNC(
+        url="https://liningfa.felfeli-lab.ir",
+        consumer_key="ck_4665c75a6fadda6680bde8cb95681f94cb38b12a",
+        consumer_secret="cs_83a9e7154f4cc33a76de6f5d567b0082a33fd128",
+        wp_api=True,
+        version="wc/v3",
+        timeout=30,
+    )
+    categories = [
+        {
+            "id": 98
+        },
+        {
+            "id": 95
+        },
+        {
+            "id": 93
+        },
+    ]
+    lining_pids_categories = [
+        {
+            'lining_pid': 561792,
+            'categories': None
+        },
+        {
+            'lining_pid': 560505,
+            'categories': None
+        },
+        {
+            'lining_pid': 561970,
+            'categories': categories
+        },
+        {
+            'lining_pid': 559932,
+            'categories': categories
+        },
+        {
+            'lining_pid': 561204,
+            'categories': categories
+        },
+    ]
+    create_products_page_on_website_async(
+        lining_pids_categories,
+        wcapi,
+        forced_to_update_page=False,
+    )
+
+
+
 def test_create_products_page_on_website_concurrently():
     wcapi = WC_API(
         url="https://liningfa.felfeli-lab.ir",
@@ -224,7 +421,7 @@ def test_create_products_page_on_website_concurrently():
     create_products_page_on_website_concurrently(
         lining_pids_categories,
         wcapi,
-        max_worker=4
+        max_worker=1
     )
 
 
@@ -259,5 +456,6 @@ if __name__ == '__main__':
     )
     time_start = time.time()
     # test_create_product_page_on_website()
-    test_create_products_page_on_website_concurrently()
+    # test_create_products_page_on_website_concurrently()
+    test_create_products_page_on_website_async()
     print('Done! (%.1fs)' % (time.time()-time_start))
