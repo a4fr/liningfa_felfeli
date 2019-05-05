@@ -11,15 +11,19 @@ import sqlite3
 import time
 
 
-def get_product_details_from_db(lining_pid, db_name='felfeli.db') -> dict:
+def get_product_details_from_db(pid, with_liningfa_pid=False, db_name='felfeli.db') -> dict:
     """ details marboot be lining_pid ro az database dar miare
-    :param lining_pid:
+    :param pid:
+    :param with_liningfa_pid: ba in pid details ro peyda mikone
     :param db_name:
     :return: dict: details
     """
     conn = sqlite3.connect(db_name)
     c = conn.cursor()
-    c.execute(""" SELECT json FROM details WHERE lining_pid=? """, (lining_pid,))
+    if with_liningfa_pid:
+        c.execute(""" SELECT json FROM details WHERE liningfa_pid=? """, (lining_pid,))
+    else:
+        c.execute(""" SELECT json FROM details WHERE lining_pid=? """, (lining_pid,))
     row = c.fetchone()
     conn.close()
     details = row[0]
