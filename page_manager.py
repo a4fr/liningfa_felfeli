@@ -21,9 +21,9 @@ def get_product_details_from_db(pid, with_liningfa_pid=False, db_name='felfeli.d
     conn = sqlite3.connect(db_name)
     c = conn.cursor()
     if with_liningfa_pid:
-        c.execute(""" SELECT json FROM details WHERE liningfa_pid=? """, (lining_pid,))
+        c.execute(""" SELECT json FROM details WHERE liningfa_pid=? """, (pid,))
     else:
-        c.execute(""" SELECT json FROM details WHERE lining_pid=? """, (lining_pid,))
+        c.execute(""" SELECT json FROM details WHERE lining_pid=? """, (pid,))
     row = c.fetchone()
     conn.close()
     details = row[0]
