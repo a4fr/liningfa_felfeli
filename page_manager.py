@@ -330,6 +330,56 @@ def create_products_page_on_website_async(lining_pids_categories: list, wcapi, m
     )
 
 
+def update_variations_async(liningfa_pids, wcapi, sem=None):
+    """ list liningfa_pid migire, variation ha ro darmiaye va upate mikone
+    :param liningfa_pids: list: [pid, pid, ...]
+    """
+    if not sem:
+        sem = asyncio.Semaphore(Config.Async.num_semaphore_variations)
+    variations = dict()
+    loop = asyncio.get_event_loop()
+    tasks = []
+    # getting all variations
+    for liningfa_pid in liningfa_pids:
+        logging.info('Getting variations pid-%s...' % liningfa_pid)
+        tasks.append(asyncio.ensure_future(wc_product.get_all_variations(wcapi, liningfa_pid, asyc_semaphore=sem)))
+    results = loop.run_until_complete(asyncio.gather(*tasks))
+
+    # deleting all variations
+    # and adding new variations
+    loop = asyncio.get_event_loop()
+    tasks = []
+    for i in range(len(liningfa_pids)):
+        # delete variations
+        liningfa_pid = liningfa_pids[i]
+        variations = results[i].json()
+        for v in variations:
+            logging.info('Deleting variation[%s]...' % v['id'])
+            tasks.append(asyncio.ensure_future(
+                wc_product.delete_variation(wcapi, liningfa_pid, v['id'], asyc_semaphore=sem)
+            ))
+        # add variations
+        details = get_product_details_from_db(liningfa_pid, with_liningfa_pid=True)
+        onsale_sizes = [size[1] for size in details['all_sizes'] if size[2] == 'onsale']
+        for size in onsale_sizes:
+            attribute = {
+                'name': 'سایز',
+                'option': size
+            }
+            logging.info('Adding Variation pid-%s(size=%s)...' % (liningfa_pid, size))
+            tasks.append(
+                wc_product.add_variation(
+                    wcapi,
+                    liningfa_pid,
+                    attribute,
+                    details['price_offer'],
+                    details['price'],
+                    asyc_semaphore=sem,
+                )
+            )
+    loop.run_until_complete(asyncio.gather(*tasks))
+
+
 def test_create_products_page_on_website_async():
     wcapi = WC_API_ASYNC(
         url="https://liningfa.felfeli-lab.ir",
