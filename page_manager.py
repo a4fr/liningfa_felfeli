@@ -378,6 +378,8 @@ def update_variations_async(liningfa_pids, wcapi):
 
 
 def test_create_products_page_on_website_async():
+    semaphore_page = asyncio.Semaphore(Config.Async.num_semaphore_page)
+    semaphore_variations = asyncio.Semaphore(Config.Async.num_semaphore_variations)
     wcapi = WC_API_ASYNC(
         url="https://liningfa.felfeli-lab.ir",
         consumer_key="ck_4665c75a6fadda6680bde8cb95681f94cb38b12a",
@@ -385,6 +387,8 @@ def test_create_products_page_on_website_async():
         wp_api=True,
         version="wc/v3",
         timeout=30,
+        semaphore_page=semaphore_page,
+        semaphore_variations=semaphore_variations,
     )
     categories = [
         {
