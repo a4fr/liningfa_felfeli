@@ -19,3 +19,6 @@ class DownloadUploadManager:
 
 class Scraper:
     user_agent = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Safari/537.36'
+
+class Async:
+    num_semaphore_variations = 30
