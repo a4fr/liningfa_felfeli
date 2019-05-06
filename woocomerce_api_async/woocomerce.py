@@ -50,6 +50,8 @@ class API(object):
         self.timeout = kwargs.get("timeout", 5)
         self.verify_ssl = kwargs.get("verify_ssl", True)
         self.query_string_auth = kwargs.get("query_string_auth", False)
+        self.semaphore_page = kwargs.get('semaphore_page', asyncio.Semaphore(30))
+        self.semaphore_variations = kwargs.get('semaphore_variations', asyncio.Semaphore(40))
 
     def __is_ssl(self):
         """ Check if url use HTTPS """

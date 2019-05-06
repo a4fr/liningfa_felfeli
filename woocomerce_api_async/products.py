@@ -8,32 +8,32 @@ from pprint import pprint
 import asyncio
 
 
-async def add_variation(wcapi: WC_API, pid, attribute, regular_price, sale_price, asyc_semaphore):
+async def add_variation(wcapi: WC_API, pid, attribute, regular_price, sale_price):
     data = {
         "regular_price": regular_price,
         "sale_price": sale_price,
         "attributes": list(),
     }
     data["attributes"].append(attribute)
-    async with asyc_semaphore:
+    async with wcapi.semaphore_variations:
         return await wcapi.post("products/%s/variations" % pid, data)
     return resp
 
 
-async def get_all_variations(wcapi: WC_API, pid, asyc_semaphore):
-    async with asyc_semaphore:
+async def get_all_variations(wcapi: WC_API, pid):
+    async with wcapi.semaphore_variations:
         resp = await wcapi.get("products/%s/variations" % pid)
     return resp
 
 
-async def delete_variation(wcapi: WC_API, pid, vid, asyc_semaphore):
-    async with asyc_semaphore:
+async def delete_variation(wcapi: WC_API, pid, vid):
+    async with wcapi.semaphore_variations:
         resp = await wcapi.delete("products/%s/variations/%s" % (pid, vid))
     return resp
 
 
-async def delete_product(wcapi: WC_API, pid, asyc_semaphore, forced=True):
-    async with asyc_semaphore:
+async def delete_product(wcapi: WC_API, pid, forced=True):
+    async with wcapi.semaphore_variations:
         resp = await wcapi.delete("products/%s?force=%s" % (pid, str(forced).lower()))
     return resp
 
