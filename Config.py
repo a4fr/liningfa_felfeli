@@ -22,5 +22,5 @@ class Scraper:
 
 
 class Async:
-    num_semaphore_variations = 50
-    num_semaphore_page = 30
+    num_semaphore_variations = 30
+    num_semaphore_page = 10
