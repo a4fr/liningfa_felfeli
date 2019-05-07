@@ -408,7 +408,7 @@ def update_variations_async(liningfa_pids, wcapi):
                 'option': size
             }
             logging.info('Adding Variation pid-%s(size=%s)...' % (liningfa_pid, size))
-            tasks.append(
+            tasks.append(asyncio.ensure_future(
                 wc_product.add_variation(
                     wcapi,
                     liningfa_pid,
@@ -416,7 +416,7 @@ def update_variations_async(liningfa_pids, wcapi):
                     details['price_offer'],
                     details['price'],
                 )
-            )
+            ))
     loop.run_until_complete(asyncio.gather(*tasks))
 
 
