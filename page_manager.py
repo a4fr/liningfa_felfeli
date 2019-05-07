@@ -442,13 +442,14 @@ def test_create_products_page_on_website_async():
             'categories': categories
         },
     ]
+    lining_pids = get_all_lining_pids_for_create_liningfa_product(limit, db_name=Config.DB.name)
+    lining_pids_categories = [{'lining_pid': lining_pid, 'categories': categories}for lining_pid in lining_pids]
     create_products_page_on_website_async(
         lining_pids_categories,
         wcapi,
         forced_to_update_page=False,
     )
     update_variations_async(['10211', '10210', '10208', '10209'], wcapi)
-
 
 
 def test_create_products_page_on_website_concurrently():
@@ -530,6 +531,7 @@ if __name__ == '__main__':
         format=Config.Logging.format
     )
     time_start = time.time()
+
     # test_create_product_page_on_website()
     # test_create_products_page_on_website_concurrently()
     test_create_products_page_on_website_async()
