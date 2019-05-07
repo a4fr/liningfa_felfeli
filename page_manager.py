@@ -442,11 +442,11 @@ def test_create_products_page_on_website_async():
             'categories': categories
         },
     ]
-    # create_products_page_on_website_async(
-    #     lining_pids_categories,
-    #     wcapi,
-    #     forced_to_update_page=False,
-    # )
+    create_products_page_on_website_async(
+        lining_pids_categories,
+        wcapi,
+        forced_to_update_page=False,
+    )
     update_variations_async(['10211', '10210', '10208', '10209'], wcapi)
 
 
