@@ -221,7 +221,7 @@ def save_liningfa_pid_in_db(lining_pid_liningfa_pid: list, db_name='felfeli.db')
     conn.close()
 
 
-def create_products_page_on_website_async(lining_pids_categories: list, wcapi, max_number_semaphore: int = 100, forced_to_update_page=True):
+def create_products_page_on_website_async(lining_pids_categories: list, wcapi, max_number_semaphore: int = 100, forced_to_update_page=False):
     """ safahat ro besoorat async misaze
     :param lining_pids_categories: [{lining_pid:.., categories:...}, ...`]
     :param wcapi:
