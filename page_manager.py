@@ -234,6 +234,10 @@ def create_products_page_on_website_async(lining_pids_categories: list, wcapi, m
     details = dict()
     all_data = dict()
     products = dict()
+
+    if len(lining_pids_categories) == 0:
+        logging.info('There is nothing to process. Maybe you should run scraper.py')
+
     for data in lining_pids_categories:
         lining_pid = data['lining_pid']
         categories = data['categories']
