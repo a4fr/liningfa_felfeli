@@ -547,7 +547,7 @@ help                                                    Sow this help
     get_all_lining_pids_for_create_liningfa_product     run this function
             """)
         elif comm == 'get_all_lining_pids_for_create_liningfa_product':
-            get_all_lining_pids_for_create_liningfa_product(limit=-1, db_name=Config.DB.name)
+            print(get_all_lining_pids_for_create_liningfa_product(limit=-1, db_name=Config.DB.name))
 
     else:
         # test_create_product_page_on_website()
