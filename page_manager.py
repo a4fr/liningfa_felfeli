@@ -86,7 +86,7 @@ def get_all_liningfa_pid(limit=-1, db_name='felfeli.db'):
     """
     conn = sqlite3.connect(db_name)
     c = conn.cursor()
-    c.execute(""" SELECT liningfa_pid FROM details WHERE liningfa_pid is not null or liningfa_pid is not '' """)
+    c.execute(""" SELECT liningfa_pid FROM details WHERE (liningfa_pid != null) or (liningfa_pid != '') """)
     if limit:
         rows = c.fetchmany(limit)
     else:
