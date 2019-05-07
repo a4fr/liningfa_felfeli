@@ -1,3 +1,4 @@
+import sys
 import arrow
 import concurrent.futures
 import asyncio
@@ -538,8 +539,19 @@ if __name__ == '__main__':
     )
     time_start = time.time()
 
-    # test_create_product_page_on_website()
-    # test_create_products_page_on_website_concurrently()
-    test_create_products_page_on_website_async()
-    # pprint(get_all_lining_pids_for_create_liningfa_product())
+    if len(sys.argv) >= 2:
+        comm = sys.argv[1]
+        if comm == 'help':
+            print("""page_manager.py [command]
+help                                                    Sow this help
+    get_all_lining_pids_for_create_liningfa_product     run this function
+            """)
+        elif comm == 'get_all_lining_pids_for_create_liningfa_product':
+            get_all_lining_pids_for_create_liningfa_product(limit=-1, db_name=Config.DB.name)
+
+    else:
+        # test_create_product_page_on_website()
+        # test_create_products_page_on_website_concurrently()
+        test_create_products_page_on_website_async()
+        # pprint(get_all_lining_pids_for_create_liningfa_product())
     print('Done! (%.1fs)' % (time.time()-time_start))
