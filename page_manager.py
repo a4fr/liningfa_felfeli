@@ -69,7 +69,7 @@ def get_all_lining_pids_for_create_liningfa_product(limit=-1, db_name='felfeli.d
     """
     conn = sqlite3.connect(db_name)
     c = conn.cursor()
-    c.execute(""" SELECT lining_pid FROM details WHERE liningfa_pid IS NULL OR liningfa_pid='' """)
+    c.execute(""" SELECT lining_pid FROM details WHERE liningfa_pid is null OR liningfa_pid is '' """)
     if limit:
         rows = c.fetchmany(limit)
     else:
