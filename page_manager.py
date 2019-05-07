@@ -442,7 +442,7 @@ def test_create_products_page_on_website_async():
             'categories': categories
         },
     ]
-    lining_pids = get_all_lining_pids_for_create_liningfa_product(limit, db_name=Config.DB.name)
+    lining_pids = get_all_lining_pids_for_create_liningfa_product(db_name=Config.DB.name)
     lining_pids_categories = [{'lining_pid': lining_pid, 'categories': categories}for lining_pid in lining_pids]
     create_products_page_on_website_async(
         lining_pids_categories,
