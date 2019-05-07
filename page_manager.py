@@ -227,7 +227,7 @@ def create_products_page_on_website_async(lining_pids_categories: list, wcapi, m
     :param wcapi:
     :param max_number_semaphore: tedad request haye hamzaman
     :param forced_to_update_page: bool: besoorat force age True bashe safhe mojood ro update mikone (bakhsh tozihat)
-    :return:
+    :return: list: [{lining_pid: liningfa_pid, lining_pid: liningfa_pid, ...}]
     """
 
     # Prepair data for send requests to API
@@ -344,9 +344,11 @@ def create_products_page_on_website_async(lining_pids_categories: list, wcapi, m
         products[lining_pid] = response
 
     # save liningfa_pid on db
+    results = [{'lining_pid': lining_pid, 'liningfa_pid': p['id']} for lining_pid, p in products.items()]
     save_liningfa_pid_in_db(
-        [{'lining_pid': lining_pid, 'liningfa_pid': p['id']} for lining_pid, p in products.items()]
+        results
     )
+    return results
 
 
 def update_variations_async(liningfa_pids, wcapi):
@@ -444,12 +446,12 @@ def test_create_products_page_on_website_async():
     ]
     lining_pids = get_all_lining_pids_for_create_liningfa_product(db_name=Config.DB.name)
     lining_pids_categories = [{'lining_pid': lining_pid, 'categories': categories}for lining_pid in lining_pids]
-    create_products_page_on_website_async(
+    result = create_products_page_on_website_async(
         lining_pids_categories,
         wcapi,
         forced_to_update_page=False,
     )
-    update_variations_async(['10211', '10210', '10208', '10209'], wcapi)
+    update_variations_async([r['liningfa_pid'] for r in result], wcapi)
 
 
 def test_create_products_page_on_website_concurrently():
