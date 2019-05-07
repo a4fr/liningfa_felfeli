@@ -77,6 +77,23 @@ def get_all_lining_pids_for_create_liningfa_product(limit=-1, db_name='felfeli.d
     return [r[0] for r in rows]
 
 
+def get_all_liningfa_pid(limit=-1, db_name='felfeli.db'):
+    """ list liningfa_pid ha ro dar miare
+    vare update variations
+    :param limit:
+    :param db_name:
+    :return:
+    """
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
+    c.execute(""" SELECT liningfa_pid FROM details WHERE liningfa_pid is not null or liningfa_pid is not '' """)
+    if limit:
+        rows = c.fetchmany(limit)
+    else:
+        rows = c.fetchall()
+    return [r[0] for r in rows]
+
+
 def create_product_page_on_website(lining_pid, wcapi, categories=None):
     """ barasas data ha'i ke az website lining.com gereftim safhe mahsool ro tooyte website
     misaze. in data ha ba lining_pid toode table[details] mojoode
@@ -403,6 +420,27 @@ def update_variations_async(liningfa_pids, wcapi):
     loop.run_until_complete(asyncio.gather(*tasks))
 
 
+def update_all_liningfa_variations(wcapi, limit=-1, db_name='felfeli.db'):
+    lininfa_pids = get_all_liningfa_pid(limit, db_name)
+    update_variations_async(lininfa_pids, wcapi)
+
+
+def test_update_all_liningfa_variations():
+    semaphore_page = asyncio.Semaphore(Config.Async.num_semaphore_page)
+    semaphore_variations = asyncio.Semaphore(Config.Async.num_semaphore_variations)
+    wcapi = WC_API_ASYNC(
+        url="https://liningfa.felfeli-lab.ir",
+        consumer_key="ck_4665c75a6fadda6680bde8cb95681f94cb38b12a",
+        consumer_secret="cs_83a9e7154f4cc33a76de6f5d567b0082a33fd128",
+        wp_api=True,
+        version="wc/v3",
+        timeout=30,
+        semaphore_page=semaphore_page,
+        semaphore_variations=semaphore_variations,
+    )
+    update_all_liningfa_variations(wcapi, limit=-1, db_name=Config.DB.name)
+
+
 def test_create_products_page_on_website_async():
     semaphore_page = asyncio.Semaphore(Config.Async.num_semaphore_page)
     semaphore_variations = asyncio.Semaphore(Config.Async.num_semaphore_variations)
@@ -545,13 +583,17 @@ if __name__ == '__main__':
             print("""page_manager.py [command]
 help                                                    Sow this help
     get_all_lining_pids_for_create_liningfa_product     run this function
+    update_all_liningfa_variations
             """)
         elif comm == 'get_all_lining_pids_for_create_liningfa_product':
             print(get_all_lining_pids_for_create_liningfa_product(limit=-1, db_name=Config.DB.name))
+        elif comm == 'update_all_liningfa_variations':
+            test_update_all_liningfa_variations()
 
     else:
         # test_create_product_page_on_website()
         # test_create_products_page_on_website_concurrently()
-        test_create_products_page_on_website_async()
+        # test_create_products_page_on_website_async()
         # pprint(get_all_lining_pids_for_create_liningfa_product())
+        test_update_all_liningfa_variations()
     print('Done! (%.1fs)' % (time.time()-time_start))
