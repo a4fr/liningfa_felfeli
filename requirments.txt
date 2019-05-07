@@ -3,3 +3,4 @@ requests
 wordpress-api
 arrow
 lxml
+aiohttp
