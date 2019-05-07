@@ -1,3 +1,4 @@
+import arrow
 import concurrent.futures
 import asyncio
 from woocomerce_api.woocomerce import API as WC_API
@@ -57,6 +58,22 @@ def get_liningfa_urls_from_db(lining_urls: list, db_name='felfeli.db'):
             images[url] = None
 
     return images
+
+
+def get_all_lining_pids_for_create_liningfa_product(limit=-1, db_name='felfeli.db'):
+    """ list tamam lining_pid ha'i ro mide ke safhe woocommerce nadaran
+        yani liningfa_pid=NULL
+    :param limit: max tedad lining_pid
+    :return: list: [lining_pid, lining_pid, ...]
+    """
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
+    c.execute(""" SELECT lining_pid FROM details WHERE liningfa_pid IS NULL OR liningfa_pid='' """)
+    if limit:
+        rows = c.fetchmany(limit)
+    else:
+        rows = c.fetchall()
+    return [r[0] for r in rows]
 
 
 def create_product_page_on_website(lining_pid, wcapi, categories=None):
@@ -192,10 +209,12 @@ def save_liningfa_pid_in_db(lining_pid_liningfa_pid: list, db_name='felfeli.db')
     """
     conn = sqlite3.connect(db_name)
     c = conn.cursor()
+    now = str(arrow.now('Asia/Tehran'))
     for d in lining_pid_liningfa_pid:
         logging.debug('Updating %s on database...' % repr(d))
-        c.execute(""" UPDATE details SET "liningfa_pid"=? WHERE "lining_pid"=? """, (
+        c.execute(""" UPDATE details SET "liningfa_pid"=?, last_update=? WHERE "lining_pid"=? """, (
             d['liningfa_pid'],
+            now,
             d['lining_pid'],
         ))
     conn.commit()
@@ -428,7 +447,7 @@ def test_create_products_page_on_website_async():
     #     wcapi,
     #     forced_to_update_page=False,
     # )
-    update_variations_async(['10211'], wcapi)
+    update_variations_async(['10211', '10210', '10208', '10209'], wcapi)
 
 
 
@@ -514,4 +533,5 @@ if __name__ == '__main__':
     # test_create_product_page_on_website()
     # test_create_products_page_on_website_concurrently()
     test_create_products_page_on_website_async()
+    # pprint(get_all_lining_pids_for_create_liningfa_product())
     print('Done! (%.1fs)' % (time.time()-time_start))
