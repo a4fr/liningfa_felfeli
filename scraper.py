@@ -336,9 +336,51 @@ def get_product_details_with_lining_pid(lining_pid):
     saved_product_details_on_db(lining_pid=lining_pid, details=details)
 
 
-def test_get_products_of_category():
+def get_all_pages_of_category(category_url):
+    """
+        URL Category ro migire va safhe roo analyse mikone
+        :param category_url: link daste
+        """
+
+    def extract_number(text):
+        """ Return number of pages """
+        # logging.debug('Paging text: ' + text.strip())
+        nums = re.findall('共(\d+)页', text)
+        # logging.debug('nums=' + repr(nums))
+        if len(nums) == 0:
+            raise Exception('There is no number!')
+        return int(nums[0])
+
+    ###############################################
+
+    soup = get_soup(category_url)
+    num_pages = extract_number(soup.find('span', {'class': 'paging'}).text)
+    current_page = int(soup.find('span', {'class': 'selpage'}).text)
+    logging.debug('This category has %s page(s)' % num_pages)
+    logging.debug('You are in page %s' % current_page)
+
+    all_pages_url = list()
+    splited_url = category_url.split(',')
+    part_one = ','.join(splited_url[0:2])
+    part_two = ','.join(splited_url[3:])
+    url_pattern = part_one + ',%s,' + part_two
+    for p_number in range(1, num_pages + 1):
+        page_url = url_pattern % p_number
+        all_pages_url.append(page_url)
+    return all_pages_url
+
+
+def test_get_all_pages_of_category():
     category_url = 'https://store.lining.com/shop/goodsCate-sale,desc,1,15s15_122,15_122,15_122_m,15_122s15_122_10,15_122_10-0-0-15_122_10,15_122_10-0s0-0-0-min,max-0.html'
-    logging.info('Getting products URL...')
+    logging.info('Getting all pages of category...')
+    all_pages = get_all_pages_of_category(category_url)
+    for i in range(len(all_pages)):
+        logging.info('page[%s] %s' % (i+1, all_pages[i]))
+
+
+def get_products_of_category(category_url):
+    category_url = 'https://store.lining.com/shop/goodsCate-sale,desc,1,15s15_122,15_122,15_122_m,15_122s15_122_10,15_122_10-0-0-15_122_10,15_122_10-0s0-0-0-min,max-0.html'
+    logging.info('Getting all pages of category...')
     products = get_products(category_url)
     pprint(products)
 
@@ -460,6 +502,7 @@ if __name__ == '__main__':
         # test_get_product_detail()
         # test_saved_product_details_on_db()
         # test_get_products_detail_concurrently()
-        test_get_products_detail_concurrently_in_category(max_num=2000)
+        # test_get_products_detail_concurrently_in_category(max_num=2000)
+        test_get_all_pages_of_category()
         # test_add_images_url_in_db()
     print('Done! %.2f' % (time.time() - time_start))
