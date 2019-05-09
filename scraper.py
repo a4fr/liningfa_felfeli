@@ -379,10 +379,13 @@ def test_get_all_pages_of_category():
 
 
 def get_products_of_category(category_url):
-    category_url = 'https://store.lining.com/shop/goodsCate-sale,desc,1,15s15_122,15_122,15_122_m,15_122s15_122_10,15_122_10-0-0-15_122_10,15_122_10-0s0-0-0-min,max-0.html'
     logging.info('Getting all pages of category...')
-    products = get_products(category_url)
-    pprint(products)
+    all_pages = get_all_pages_of_category(category_url)
+    products = list()
+    for url in all_pages:
+        this_page_products = get_products(url)
+        products.extend(this_page_products)
+    return products
 
 
 def test_get_product_detail():
@@ -459,9 +462,10 @@ def test_get_products_detail_concurrently():
 
 
 def test_get_products_detail_concurrently_in_category(max_num=20):
-    category_url = 'https://store.lining.com/shop/goodsCate-sale,desc,1,15s15_122,15_122,15_122_m,15_122s15_122_10,15_122_10-0-0-15_122_10,15_122_10-0s0-0-0-min,max-0.html'
+    category_url = 'https://store.lining.com/shop/goodsCate-sale,desc,1,15s15_122,15_122_m,15_122_l-0-0-15_122,15_122_m,15_122_l-0s0-0-0-min,max-0.html'
     logging.info('Getting products URL...')
-    products = get_products(category_url)
+    products = get_products_of_category(category_url)
+    logging.info('There is %s products in this category!' % len(products))
     if len(products) > max_num:
         products = products[:max_num]
     get_product_details_concurrently(
@@ -502,7 +506,7 @@ if __name__ == '__main__':
         # test_get_product_detail()
         # test_saved_product_details_on_db()
         # test_get_products_detail_concurrently()
-        # test_get_products_detail_concurrently_in_category(max_num=2000)
-        test_get_all_pages_of_category()
+        test_get_products_detail_concurrently_in_category(max_num=2000)
+        # test_get_all_pages_of_category()
         # test_add_images_url_in_db()
     print('Done! %.2f' % (time.time() - time_start))
