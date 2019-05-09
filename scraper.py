@@ -303,6 +303,7 @@ def get_product_details_concurrently(products: list, max_worker=4, save_in_db=Tr
                 result['description_images'] + result['slider_images'],
                 db_name=db_name,
             )
+    logging.info('%s products processed saved!' % len(results))
     return results
 
 
@@ -459,6 +460,6 @@ if __name__ == '__main__':
         # test_get_product_detail()
         # test_saved_product_details_on_db()
         # test_get_products_detail_concurrently()
-        test_get_products_detail_concurrently_in_category(max_num=10)
+        test_get_products_detail_concurrently_in_category(max_num=2000)
         # test_add_images_url_in_db()
     print('Done! %.2f' % (time.time() - time_start))
