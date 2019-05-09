@@ -23,7 +23,7 @@ def get_html(url: str) -> str:
     logging.debug('User-Agent: ' + headers['User-Agent'])
     r = requests.get(url.strip(), headers=headers)
     r.encoding = 'utf8'
-    logging.info('[Status Code: %s]' % r.status_code)
+    print('[Status Code: %s]' % r.status_code)
     if r.status_code != 200:
         raise Exception('Error in get HTML!')
     return r.text
@@ -40,7 +40,7 @@ def get_json(url, data) -> dict:
     logging.debug('data: ' + repr(data))
     r = requests.post(url.strip(), data=data, headers=headers)
     r.encoding = 'utf8'
-    logging.info('[Status Code: %s]' % r.status_code)
+    print('[Status Code: %s]' % r.status_code)
     if r.status_code != 200:
         raise Exception('Error in get Json!')
     return r.json()
@@ -287,7 +287,7 @@ def get_product_details_concurrently(products: list, max_worker=4, save_in_db=Tr
     # gereftan khoroji
     results = dict()
     for pid, worker in workers.items():
-        logging.info('Watting for product#%s...' % pid)
+        print('Watting for product#%s...' % pid)
         result = worker.result()
         results[pid] = result
         if save_in_db:
@@ -303,7 +303,7 @@ def get_product_details_concurrently(products: list, max_worker=4, save_in_db=Tr
                 result['description_images'] + result['slider_images'],
                 db_name=db_name,
             )
-    logging.info('%s products processed saved!' % len(results))
+    print('%s products processed saved!' % len(results))
     return results
 
 
@@ -324,7 +324,7 @@ def add_images_url_in_db(urls: list, db_name='felfeli.db'):
 
         # add to db if not exist
         if not row:
-            logging.info('Adding "%s" to DB...' % url)
+            print('Adding "%s" to DB...' % url)
             c.execute(""" INSERT INTO images (lining_url, last_update) VALUES (?, ?) """, (url, datetime_now))
             conn.commit()
     conn.close()
@@ -372,14 +372,14 @@ def get_all_pages_of_category(category_url):
 
 def test_get_all_pages_of_category():
     category_url = 'https://store.lining.com/shop/goodsCate-sale,desc,1,15s15_122,15_122,15_122_m,15_122s15_122_10,15_122_10-0-0-15_122_10,15_122_10-0s0-0-0-min,max-0.html'
-    logging.info('Getting all pages of category...')
+    print('Getting all pages of category...')
     all_pages = get_all_pages_of_category(category_url)
     for i in range(len(all_pages)):
-        logging.info('page[%s] %s' % (i+1, all_pages[i]))
+        print('page[%s] %s' % (i+1, all_pages[i]))
 
 
 def get_products_of_category(category_url):
-    logging.info('Getting all pages of category...')
+    print('Getting all pages of category...')
     all_pages = get_all_pages_of_category(category_url)
     products = list()
     for url in all_pages:
@@ -463,9 +463,9 @@ def test_get_products_detail_concurrently():
 
 def test_get_products_detail_concurrently_in_category(max_num=20):
     category_url = 'https://store.lining.com/shop/goodsCate-sale,desc,1,15s15_122,15_122_m,15_122_l-0-0-15_122,15_122_m,15_122_l-0s0-0-0-min,max-0.html'
-    logging.info('Getting products URL...')
+    print('Getting products URL...')
     products = get_products_of_category(category_url)
-    logging.info('There is %s products in this category!' % len(products))
+    print('There is %s products in this category!' % len(products))
     if len(products) > max_num:
         products = products[:max_num]
     get_product_details_concurrently(
